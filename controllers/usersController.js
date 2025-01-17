@@ -102,8 +102,6 @@ const loginUser = asyncHandler(async (req, res) => {
         { expiresIn: "1m" }
     );
 
-    console.log('TEST: accessToken', accessToken);
-
     res.status(200).json({ accessToken });
 });
 
