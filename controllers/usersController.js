@@ -2,6 +2,10 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+
+require("dotenv").config();
+
 //@desc Get all users
 //@route GET /api/users
 //@access public
@@ -63,7 +67,44 @@ const registerUser = asyncHandler(async (req, res) => {
 //@route POST /api/users/login 
 //@access public
 const loginUser = asyncHandler(async (req, res) => {
-    res.status(200).json({ message: "Login user" });
+    const {email, password} = req.body;
+
+    if (!email) {
+        res.status(400);
+        throw new Error("Email is required");
+    } else if (!password) {
+        res.status(400);
+        throw new Error("Password is required");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        res.status(400);
+        throw new Error("User not found");
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordCorrect) {
+        res.status(401);
+        throw new Error("Invalid password");
+    }
+
+    const accessToken = jwt.sign({
+        user: {
+            username: user.username,
+            email: user.email,
+            id: user.id
+        },
+    },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "1m" }
+    );
+
+    console.log('TEST: accessToken', accessToken);
+
+    res.status(200).json({ accessToken });
 });
 
 //@desc Get current user info
