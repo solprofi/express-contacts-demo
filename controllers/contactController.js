@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 //@route GET /api/contacts
 //@access private
 const getContacts = asyncHandler(async (req, res) => {
-    const contacts = await Contact.find();
+    const contacts = await Contact.find({ user_id: req.user.id }).populate("user_id", "-password -createdAt -updatedAt");
 
     res.status(200).json(contacts);
 });
@@ -16,12 +16,14 @@ const getContacts = asyncHandler(async (req, res) => {
 //@access private
 const createContact = asyncHandler(async (req, res) => {
     const { name, phone, email } = req.body;
+    const user_id = req.user.id;
 
     try {
         const newContact = await Contact.create({
             name,
             phone,
-            email
+            email,
+            user_id
         });
 
         res.status(201).json(newContact);
@@ -74,6 +76,11 @@ const updateContact = asyncHandler(async (req, res) => {
         throw new Error("Contact not found");
     }
 
+    if (contact.user_id.toString() !== req.user.id) {
+        res.status(403);
+        throw new Error("User does not have permission to update this contact");
+    }
+
     const updatedContact = await Contact.findByIdAndUpdate(id, req.body, { new: true });
 
     res.status(200).json(updatedContact);
@@ -95,6 +102,11 @@ const deleteContact = asyncHandler(async (req, res) => {
     if (!contact) {
         res.status(404);
         throw new Error("Contact not found");
+    }
+
+    if (contact.user_id.toString() !== req.user.id) {
+        res.status(403);
+        throw new Error("User does not have permission to delete this contact");
     }
 
     res.status(200).json(contact);
