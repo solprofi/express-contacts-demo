@@ -39,6 +39,11 @@ const deleteUser = asyncHandler(async (req, res) => {
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body;
 
+    if (!username || !email || !password) {
+        res.status(400);
+        throw new Error("All fields are required");
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     try {
