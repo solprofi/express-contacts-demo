@@ -4,8 +4,6 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 
-require("dotenv").config();
-
 //@desc Get all users
 //@route GET /api/users
 //@access public
@@ -99,7 +97,7 @@ const loginUser = asyncHandler(async (req, res) => {
         },
     },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1m" }
+        { expiresIn: "30m" }
     );
 
     res.status(200).json({ accessToken });
@@ -109,7 +107,7 @@ const loginUser = asyncHandler(async (req, res) => {
 //@route GET /api/users/current
 //@access private
 const currentUser = asyncHandler(async (req, res) => {
-    res.status(200).json({ message: "Current user information" });
+    res.status(200).json(req.user);
 });
 
 module.exports = { registerUser, loginUser, currentUser, getUsers, deleteUser };
