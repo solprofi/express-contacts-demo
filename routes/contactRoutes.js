@@ -3,6 +3,8 @@ const { getContacts, createContact, getContact, updateContact, deleteContact } =
 
 const router = express.Router();
 
+router.use(validateToken);
+
 router.route("/")
     .get(getContacts)
     .post(createContact);
@@ -11,11 +13,5 @@ router.route("/:id")
     .get(getContact)
     .put(updateContact)
     .delete(deleteContact);
-
-router.route("/test").get((req, res) => {
-    res.status(200).json({
-        message: "this is a test"
-    })
-});
 
 module.exports = router;
